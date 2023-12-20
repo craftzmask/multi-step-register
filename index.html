@@ -3,9 +3,211 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
     <title>Multi-step Register Form</title>
   </head>
   <body>
-    <h1>Multi-step Register Form</h1>
+    <div id="container">
+      <form onsubmit="alert('✅ Success')">
+        <div class="notification"></div>
+        <!--Register step-->
+        <div class="register">
+          <h3>Register</h3>
+          <div class="input">
+            <label for="name">Name</label>
+            <input
+              id="name"
+              type="text"
+              name="name"
+              placeholder="enter your name"
+              autocomplete="on"
+              required
+            />
+          </div>
+          <div class="input">
+            <label for="email">Email</label>
+            <input
+              id="email"
+              type="email"
+              name="email"
+              placeholder="example@gmail.com"
+              autocomplete="on"
+              required
+            />
+          </div>
+          <div class="continue-button">Continue</div>
+        </div>
+
+        <!--Interested topics step-->
+        <div class="interested-topics">
+          <h3>Which topics you are interested in?</h3>
+          <div class="checkbox-input">
+            <input
+              type="checkbox"
+              name="software-development"
+              id="software-development"
+              value="software-development"
+            />
+            <label for="software-development">Software Development</label>
+          </div>
+
+          <div class="checkbox-input">
+            <input
+              type="checkbox"
+              name="user-experience"
+              id="user-experience"
+              value="user-experience"
+            />
+            <label for="user-experience">User Experience</label>
+          </div>
+          <div class="checkbox-input">
+            <input
+              type="checkbox"
+              name="graphic-design"
+              id="graphic-design"
+              value="graphic-design"
+            />
+            <label for="graphic-design">Graphic Design</label>
+          </div>
+          <div class="continue-button">Continue</div>
+        </div>
+
+        <!--Summary step-->
+        <div class="summary">
+          <h3>Summary</h3>
+          <div class="summary__name">
+            <span>Name: </span>
+            <p></p>
+          </div>
+          <div class="summary__email">
+            <span>Email: </span>
+            <p></p>
+          </div>
+          <div class="summary__topics">
+            <span>Topics</span>
+            <ul class="summary__topic-list"></ul>
+          </div>
+          <button type="submit">Confirm</button>
+        </div>
+      </form>
+
+      <div class="step-display">
+        <div class="step-display__text">
+          Step <span class="current-step">1</span> of 3
+        </div>
+        <div class="step-display__indicator">
+          <div class="step step--selected">
+            <div class="step__dot step__dot--selected"></div>
+          </div>
+          <div class="step">
+            <div class="step__dot"></div>
+          </div>
+          <div class="step">
+            <div class="step__dot"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script defer>
+      const registerPage = document.querySelector(".register");
+      const interestedTopicsPage = document.querySelector(".interested-topics");
+      const summaryPage = document.querySelector(".summary");
+      const notification = document.querySelector(".notification");
+      const currentStepText = document.querySelector(".current-step");
+      const continueButtons = document.querySelectorAll(".continue-button");
+      const checkboxInputs = document.querySelectorAll(".checkbox-input");
+      const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+      const steps = document.querySelectorAll(".step");
+      let currentStep = 0;
+
+      // hide the 2nd and 3rd steps initially
+      interestedTopicsPage.style.display = "none";
+      summaryPage.style.display = "none";
+
+      // add function to the continue buttons
+      continueButtons.forEach((button) =>
+        button.addEventListener("click", nextPage)
+      );
+
+      // Add clickable to each checkbox div including labels
+      checkboxInputs.forEach((checkboxInput) => {
+        checkboxInput.addEventListener("click", () => {
+          checkboxInput.classList.toggle("checkbox-input--selected");
+          const checkbox = checkboxInput.children[0];
+          checkbox.checked = !checkbox.checked;
+        });
+
+        const label = checkboxInput.children[1];
+        label.addEventListener("click", () => {
+          checkboxInput.classList.toggle("checkbox-input--selected");
+        });
+      });
+
+      function updateSummary() {
+        summaryPage.style.display = "flex";
+        const name = document.querySelector('input[name="name"]').value;
+        const email = document.querySelector('input[name="email"]').value;
+        document.querySelector(".summary__name p").textContent += name;
+        document.querySelector(".summary__email p").textContent += email;
+        const summaryTopics = document.querySelector(".summary__topic-list");
+        checkboxInputs.forEach((checkboxInput) => {
+          const checkbox = checkboxInput.children[0];
+          const label = checkboxInput.children[1];
+          if (checkbox.checked) {
+            const li = document.createElement("li");
+            li.textContent = label.textContent;
+            summaryTopics.appendChild(li);
+          }
+        });
+      }
+
+      function nextPage() {
+        const pages = [registerPage, interestedTopicsPage, summaryPage];
+        if (validForm(pages[currentStep])) {
+          steps[currentStep].classList.toggle("step--selected");
+          pages[currentStep++].style.display = "none";
+          pages[currentStep].style.display = "block";
+          steps[currentStep].classList.toggle("step--selected");
+          steps[currentStep].children[0].classList.toggle(
+            "step__dot--selected"
+          );
+          currentStepText.textContent = currentStep + 1;
+
+          if (currentStep === 2) {
+            updateSummary();
+          }
+        } else {
+          notification.textContent =
+            "Invalid input. Please provide all valid inputs";
+          setTimeout(() => {
+            notification.textContent = "";
+          }, 2000);
+        }
+      }
+
+      function validForm(page) {
+        const fields = Array.from(page.getElementsByTagName("input"));
+
+        if (fields[0].type === "checkbox") {
+          return fields.some((f) => f.checked);
+        }
+
+        if (fields.some((f) => f.value === "")) {
+          return false;
+        }
+
+        if (fields.some((f) => f.type === "email" && !validEmail(f.value))) {
+          return false;
+        }
+
+        return true;
+      }
+
+      function validEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+      }
+    </script>
   </body>
 </html>
