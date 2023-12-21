@@ -9,7 +9,6 @@
   <body>
     <div id="container">
       <form onsubmit="alert('✅ Success')">
-        <div class="notification"></div>
         <!--Register step-->
         <div class="register">
           <h3>Register</h3>
@@ -178,11 +177,7 @@
             updateSummary();
           }
         } else {
-          notification.textContent =
-            "Invalid input. Please provide all valid inputs";
-          setTimeout(() => {
-            notification.textContent = "";
-          }, 2000);
+          alert("Invalid input. Please provide all valid inputs");
         }
       }
 
